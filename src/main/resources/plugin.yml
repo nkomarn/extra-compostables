@@ -1,0 +1,7 @@
+name: extracompostables
+description: Compost the world!
+main: xyz.nkomarn.extracompostables.ExtraCompostables
+author: Mykyta (@nkomarn)
+website: https://nkomarn.xyz
+version: 1.0
+api-version: 1.17
