@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'xyz.nkomarn'
-version '1.0.1'
+version '1.0.2'
 
 targetCompatibility = '17'
 sourceCompatibility = '17'
