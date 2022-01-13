@@ -1,8 +1,8 @@
 package xyz.nkomarn.extracompostables;
 
-import net.minecraft.core.IRegistry;
-import net.minecraft.resources.MinecraftKey;
-import net.minecraft.world.level.block.BlockComposter;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.ComposterBlock;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +54,7 @@ public class ExtraCompostables extends JavaPlugin {
      * @param chance   The chance for a successful compost, from 1-100.
      */
     private void registerCompostable(@NotNull Material material, int chance) {
-        var item = IRegistry.Z.get(new MinecraftKey(material.getKey().toString()));
-        BlockComposter.e.put(item, chance / 100F);
+        var item = Registry.ITEM.get(new ResourceLocation(material.getKey().toString()));
+        ComposterBlock.COMPOSTABLES.put(item, chance / 100F);
     }
 }
