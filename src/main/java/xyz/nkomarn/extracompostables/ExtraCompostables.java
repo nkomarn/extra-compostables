@@ -3,6 +3,7 @@ package xyz.nkomarn.extracompostables;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.ComposterBlock;
+import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +48,8 @@ public class ExtraCompostables extends JavaPlugin {
         }
 
         return compostables.getKeys(false).stream()
+                .map(String::toUpperCase)
+                .filter(key -> EnumUtils.isValidEnum(Material.class, key))
                 .collect(Collectors.toMap(Material::valueOf, compostables::getInt));
     }
 
