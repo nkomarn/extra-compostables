@@ -27,6 +27,11 @@ public class ExtraCompostables extends JavaPlugin {
         readConfig().forEach(this::registerCompostable);
     }
 
+    @Override
+    public void onDisable() {
+        revertCompostables();
+    }
+
     /**
      * Reads the configuration into a map of compostable materials
      * and their configured success rates.
@@ -56,5 +61,10 @@ public class ExtraCompostables extends JavaPlugin {
     private void registerCompostable(@NotNull Material material, int chance) {
         var item = Registry.ITEM.get(new ResourceLocation(material.getKey().toString()));
         ComposterBlock.COMPOSTABLES.put(item, chance / 100F);
+    }
+
+    private void revertCompostables() {
+        ComposterBlock.COMPOSTABLES.clear();
+        ComposterBlock.bootStrap();
     }
 }
