@@ -1,6 +1,6 @@
 name: extracompostables
 description: Compost the world!
-main: xyz.nkomarn.extracompostables.ExtraCompostables
+main: zip.kyta.extracompostables.ExtraCompostables
 author: Mykyta (@nkomarn)
 website: https://nkomarn.xyz
 version: 1.0.2

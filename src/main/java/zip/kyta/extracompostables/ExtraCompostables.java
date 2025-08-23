@@ -1,4 +1,4 @@
-package xyz.nkomarn.extracompostables;
+package zip.kyta.extracompostables;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
