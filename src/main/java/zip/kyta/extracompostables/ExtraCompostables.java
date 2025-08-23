@@ -1,15 +1,19 @@
 package zip.kyta.extracompostables;
 
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.ComposterBlock;
-import org.apache.commons.lang3.EnumUtils;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import zip.kyta.extracompostables.compat.Platform;
+import zip.kyta.extracompostables.compat.V_3953;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -21,24 +25,43 @@ import java.util.stream.Collectors;
  * @author Mykyta @nkomarn
  */
 public class ExtraCompostables extends JavaPlugin {
+    private static final TreeMap<Integer, Class<?>> PLATFORM_VERSIONS = new TreeMap<>() {{
+        put(3953, V_3953.class); // 1.21
+    }};
+
+    @Nullable
+    private Platform platform;
 
     @Override
     public void onEnable() {
+        platform = initializePlatform();
+
         saveDefaultConfig();
-        readConfig().forEach(this::registerCompostable);
+        readConfig().forEach(platform::registerCompostable);
     }
 
     @Override
     public void onDisable() {
-        revertCompostables();
+        if (platform != null) {
+            platform.revertCompostables();
+        }
     }
 
-    /**
-     * Reads the configuration into a map of compostable materials
-     * and their configured success rates.
-     *
-     * @return A map of configured materials and chances.
-     */
+    @NotNull
+    @SuppressWarnings("deprecation")
+    private Platform initializePlatform() {
+        var dataVersion = getServer().getUnsafe().getDataVersion();
+        var closestCompatibleVersion = PLATFORM_VERSIONS.floorEntry(dataVersion);
+
+        getLogger().info("Using platform implementation for data version " + closestCompatibleVersion.getKey() + "..");
+
+        try {
+            return (Platform) closestCompatibleVersion.getValue().newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to load platform-specific classes; this version of the plugin is likely incompatible with your Minecraft release.", e);
+        }
+    }
+
     @NotNull
     private Map<Material, Integer> readConfig() {
         var compostables = getConfig().getConfigurationSection("compostables");
@@ -48,26 +71,9 @@ public class ExtraCompostables extends JavaPlugin {
         }
 
         return compostables.getKeys(false).stream()
-                .map(String::toUpperCase)
-                .filter(key -> EnumUtils.isValidEnum(Material.class, key))
-                .collect(Collectors.toMap(Material::valueOf, compostables::getInt));
-    }
-
-    /**
-     * Registers an item type as compostable during runtime. This
-     * directly modifies <code>ComposterBlock#COMPOSTABLES</code> to
-     * register items as compostable.
-     *
-     * @param material The item to register as compostable.
-     * @param chance   The chance for a successful compost, from 1-100.
-     */
-    private void registerCompostable(@NotNull Material material, int chance) {
-        var item = Registry.ITEM.get(new ResourceLocation(material.getKey().toString()));
-        ComposterBlock.COMPOSTABLES.put(item, chance / 100F);
-    }
-
-    private void revertCompostables() {
-        ComposterBlock.COMPOSTABLES.clear();
-        ComposterBlock.bootStrap();
+                .map(NamespacedKey::minecraft)
+                .map(Registry.MATERIAL::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(Function.identity(), value -> compostables.getInt(value.getKey().getKey())));
     }
 }
